@@ -83,7 +83,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                 # print('hi3')
                 for a in range(maxage):
                     if w==0:
-                        driftadvantage[t]+=np.sum(np.multiply(pref[:,t-1,a,0], envi[:,t])) # Calculating the number of flies that survive without drift #Should extend to include BH
+                        driftadvantage[t]+=np.sum(np.multiply(pref[:,t-1,a,0], envi[:,t])) # Calculating the number of flies that survive without drift #Should extend to include BH #FInd bug
                     #print(driftadvantage[t])
                 # bye = time.perf_counter()
                 # print(bye-hi)
@@ -98,16 +98,16 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                         # print(pref[b,t-1,a,0])
                         for b in range(numberofbins):
                             if driftvariance[q]<.05/numberofbins: #check if blur is too low to be worth blurring. NOTE: This number should be based on the limit of sci.norm.pdf
-                                pref[b,t,a,w]+=pref[b,t-1,a,0]
+                                pref[b,t,a,w]+=pref[b,t-1,a,0] #FInd bug
                             else:
                                 pref[:,t,a,w]+=pref[b,t-1,a,0]*blur[b,:,w]/np.sum(blur[b,:,w])
                             #pref[:,t,a]+=pref[b,t-1,a]*sci.norm.pdf(x,x[b],driftvariance)/np.sum(sci.norm.pdf(x,x[b],driftvariance))
-                    pref[:,t,a,w]=np.multiply(pref[:,t,a,w], envi[:,t]) # Multiplying the preference to the environment
+                    pref[:,t,a,w]=np.multiply(pref[:,t,a,w], envi[:,t]) # Multiplying the preference to the environment #FInd bug
                 # two = time.perf_counter()
                 # print(two-one)
 
             # print('hi5')
-            driftadvantage[t]=np.sum(pref[:,t,:,0])-driftadvantage[t]
+            driftadvantage[t]=np.sum(pref[:,t,:,0])-driftadvantage[t] #FInd bug
             betadvantage[t]=np.sum(pref[:,t,0,0]-pref[:,t,0,1])
             pref[:,t,1:,0]=pref[:,t,:-1,0]
         if showgraphs:
