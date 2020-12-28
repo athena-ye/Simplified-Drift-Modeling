@@ -23,8 +23,10 @@ def matrixmaker(bhlower, bhupper, bhinterval, driftlower, driftupper, driftinter
     birthrate=40
     matureage=10
     percentbh=0.01
+    adaptivetracking=0
     # intervals=16
-    showgraphs=True
+    showgraphs=False
+
     figuresavepath='figs'
     prefvariance=np.linspace(bhlower, bhupper, bhinterval)
     driftvariance=np.linspace(driftlower, driftupper, driftinterval)
@@ -39,7 +41,7 @@ def matrixmaker(bhlower, bhupper, bhinterval, driftlower, driftupper, driftinter
     flatmatrix=np.zeros(numruns)
 
     # for x in range(bhinterval):
-    flatmatrix[:]=Parallel(n_jobs=-1, verbose=10)(delayed(sd.driftmodeling)(flynum, numberofbins, numberofdays, prefmean, [prefvariance[n%bhinterval]], envimean, envivariance, [driftvariance[math.floor(n/bhinterval)]], gain, per,maxsurvivalrate,birthrate,matureage, percentbh, showgraphs, figuresavepath) for n in range(numruns))
+    flatmatrix[:]=Parallel(n_jobs=-1, verbose=10)(delayed(sd.driftmodeling)(flynum, numberofbins, numberofdays, prefmean, [prefvariance[n%bhinterval]], envimean, envivariance, [driftvariance[math.floor(n/bhinterval)]], adaptivetracking, gain, per,maxsurvivalrate,birthrate,matureage, percentbh, showgraphs, figuresavepath) for n in range(numruns))
             # print(["Drift is: ", driftvariance[y], "Bet-hedging is: ", driftvariance[x]] )
             # print(matrix)
     print(flatmatrix)
