@@ -40,14 +40,9 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
             pref[math.floor(numberofbins/2),0,0]=flynum
             #print(pref[:,0,0,0])
 
-<<<<<<< HEAD
-        pref[:,0,0,0]=pref[:,0,0,0]/np.sum(pref[:,0,0,0])*flynum # total # of flies=flynum
-        pref[:,0,1,0]=pref[:,0,0,0] # Fly ages to 1, day changes to 1, set the same as initial
-=======
         pref[:,0,0]=pref[:,0,0]/np.sum(pref[:,0,0])*flynum # total # of flies=flynum
         # pref[:,1,1,0]=pref[:,0,0,0] # Fly ages to 1, day changes to 1, set the same as initial
 
->>>>>>> pr/6
 
         # Now set pref[:,0,0], which is the "reduced bet hedge version"
         if prefvariance[q]*percentbh>=0.015: #Check if variance is so small to just eliminate bet-hedging
@@ -72,68 +67,6 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
             blur[b,:]=sci.norm.pdf(x,x[b],driftvariance[q])
 
         for t in range(1,numberofdays):
-<<<<<<< HEAD
-            #print('t is: '+str(t))
-            print(pref[:,t,:,0])
-            for w in range(2):
-                # print(w)
-                pref[:,t,0,w]=pref[:,0,0,w]*birthrate/flynum*np.sum(pref[:,t-1,matureage:,0]) # Calculate newborn flies
-                #print(pref[:,t,0,w])
-
-                envi[:,t]=sci.norm.pdf(x,(envimean+gain*np.sin(t*np.pi*2/per)),envivariance) # Making envi a sin wave that changes over time
-                envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate # Normalizing the envi and multiplying by maxsurvival rate
-                # toc = time.perf_counter()
-                # print(toc-tic)
-                #print(pref[:,t,0,0])
-                # if w==0:
-                #     driftadvantage[t]=np.sum(np.multiply(pref[:,t-1,0,0],envi[:,t]))
-                # #print(np.multiply(pref[:,t,0,0], envi[:,t]))
-                #hi = time.perf_counter()
-                #predriftpref=pref[:,t-1,:,0]+pref[:,t,:,0]
-
-                for a in range(1,maxage):
-                    if w==0:
-                        #print(a)
-                        #print(driftadvantage[t])
-                        driftadvantage[t]+=np.sum(np.multiply(pref[:,t-1,a-1,0], envi[:,t])) # Calculating the number of flies that survive without drift #Should extend to include BH #FInd bug
-                    #print(driftadvantage[t])
-                
-   
-                for a in range(maxage):
-                    #pref[:,t,a]+=pref[:,t-1,a]
-                    #not sure why this line was here!
-                    if a>0:
-                        # print(pref[b,t-1,a,0])
-                        for b in range(numberofbins):
-                            if driftvariance[q]<.05/numberofbins: #check if blur is too low to be worth blurring. NOTE: This number should be based on the limit of sci.norm.pdf
-                                #print(pref[b,t,a,w])
-                                # print(pref[b,t-1,a,0])
-                                pref[b,t,a,w]+=pref[b,t-1,a-1,0] #FInd bug
-                                if pref[b,t,a,w]!=pref[b,t-1,a-1,0]:
-                                    print('doesn\'t match')
-                                    print(b,t,a,w)
-                                    print(pref[b,t,a,w])
-                                    print(pref[b,t-1,a-1,0])
-                            else:
-                                pref[:,t,a,w]+=pref[b,t-1,a-1,0]*blur[b,:,w]/np.sum(blur[b,:,w])
-                            #pref[:,t,a]+=pref[b,t-1,a]*sci.norm.pdf(x,x[b],driftvariance)/np.sum(sci.norm.pdf(x,x[b],driftvariance))
-                    pref[:,t,a,w]=np.multiply(pref[:,t,a,w], envi[:,t]) # Multiplying the preference to the environment #FInd bug
-
-                #print(pref[:,t,0,0])
-                #print(np.multiply(pref[:,t-1,0,0],envi[:,t]))
-                # two = time.perf_counter()
-                # print(two-one)
-
-            #print(np.sum(pref[:,t,:,0])) # NOTE: CHANGES AFTER DAY 9, RIGHT ON DAY 10
-            #print(driftadvantage[t]) #, MUST BE ACCOUNTING FOR THE FLIES THAT ARE JUST BORN
-            if w==0:
-                driftadvantage[t]=np.sum(pref[:,t,1:,0])-driftadvantage[t] #FInd bug
-            betadvantage[t]=np.sum(pref[:,t,0,0]-pref[:,t,0,1])
-            #pref[:,t,1:,0]=pref[:,t,:-1,0]
-            pref[:,t,1:,0]=pref[:,t,:-1,0]
-        
-        #print(driftadvantage)
-=======
 
             envi[:,t]=sci.norm.pdf(x,(envimean+gain*np.sin(t*np.pi*2/per)),envivariance) # Making envi a sin wave that changes over time
             envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate # Normalizing the envi and multiplying by maxsurvival rate
@@ -165,7 +98,6 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
             # betadvantage[t]=np.sum(pref[:,t,0]-pref[:,t,0])
             # pref[:,t,1:,0]=pref[:,t,:-1,0] #replaced with a-1
 
->>>>>>> pr/6
 
         if showgraphs:
             #before = time.perf_counter()
