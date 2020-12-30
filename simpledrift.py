@@ -74,12 +74,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                         if driftvariance[q]<.05/numberofbins: # Check if blur is too low to be worth blurring. NOTE: This number should be based on the limit of sci.norm.pdf
                             pref[b,t,a]+=pref[b,t-1,a-1] # If it is too low, just carry it forward
                         else: # If not, multiply by the blur value and carry it forward
-                            print(pref[:,t,a])
-                            print(pref[b,t-1,a-1])
-                            print(blur[b,:])
-                            print(np.sum(blur[b,:]))
                             pref[:,t,a]+=pref[b,t-1,a-1]*blur[b,:]/np.sum(blur[b,:])
-                            print ('final is ' + str(pref[b,t-1,a-1]))
                     pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Multiplying the preference to the environment
 
             driftadvantage[t]=np.sum(pref[:,t,:])-driftadvantage[t]-numfliesborntoday
