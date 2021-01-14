@@ -18,13 +18,13 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
 
     for q in range(numconditions): # Run a for loop for each condition
         pref=np.zeros((numberofbins,numberofdays,maxage)) # Make a zeros matrix for [bins, days, maxage]
-        if prefvariance[q]>=0.015:  # Check if variance is too small so that we can just eliminate bet-hedging
+        if prefvariance[q]>=0.015:  # Check if original prefvariance is too small so that we can just eliminate bet-hedging
             pref[:,0,0]=sci.norm.pdf(x,prefmean[q],prefvariance[q]) # If variance is large enough, set a fly's first day preference gaussian with center around 0
         else: # If not, make the bin in the middle have all the flies
             pref[math.floor(numberofbins/2),0,0]=flynum
         pref[:,0,0]=pref[:,0,0]/np.sum(pref[:,0,0])*flynum # Set the total number of flies to equal flynum
 
-        if prefvariance[q]*percentbh>=0.015: # Check if variance is too small so that we can just eliminate bet-hedging
+        if prefvariance[q]*percentbh>=0.015: # Check if variance is too small so that we can just eliminate bet-hedging for bh difference
             reducedbethedgeinitial=sci.norm.pdf(x,prefmean[q],np.multiply(prefvariance[q],percentbh)) # If it is large enough, set the reduced bh fly's first day preference gaussian with center around 0 and variance reduced
         else: # If not, make the bin in the middle have all the flies
             reducedbethedgeinitial=np.zeros(numberofbins)
@@ -52,9 +52,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                 #maybe we should consider putting in some amount of variation on adaptivetracking (shift mean but keep bet hedging?)
             numfliesborntoday=np.sum(pref[:,t,0]) # Calculate the new number of flies born on that day
 
-            betadvantage[t]=np.sum(np.multiply(pref[:,t,0], envi[:,t]))-numfliesborntoday*envi[math.floor(numberofbins/2),t] #
-            
-            print(np.sum(blur[b,:]))
+            betadvantage[t]=np.sum(np.multiply(pref[:,t,0], envi[:,t]))-numfliesborntoday*envi[math.floor(numberofbins/2),t] # Calculate the advantage of the bh
 
             for a in range(maxage): # For the flies age...
 
@@ -63,10 +61,10 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                 if a>0:
                     for b in range(numberofbins):
                         if driftvariance[q]<.05/numberofbins: # Check if blur is too low to be worth blurring. NOTE: This number should be based on the limit of sci.norm.pdf
-                            pref[b,t,a]+=pref[b,t-1,a-1] # If it is too low, just carry it forward
-                        else: # If not, multiply by the blur value and carry it forward
+                            pref[b,t,a]+=pref[b,t-1,a-1] # If it is too low, just move on the the next day
+                        else: # If not, multiply by the blur value and move on to the next day
                             pref[:,t,a]+=pref[b,t-1,a-1]*blur[b,:]/np.sum(blur[b,:])
-                    pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Multiplying the preference to the environment
+                    pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Calculate the survival of flies by multiplying the preference to the environment
 
             driftadvantage[t]=np.sum(pref[:,t,:])-driftadvantage[t]-numfliesborntoday
 
@@ -122,6 +120,6 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
         #     else:
         #         print('not saving, no valid path')
 
-        finalpop[q]=np.sum(pref[:,-1,:])
+        finalpop[q]=np.sum(pref[:,-1,:]) # Calculate finalpop
 
-    return finalpop
+    return finalpop # Return finalpop

@@ -12,7 +12,7 @@ import os
 # 2. Document every single step (make a figure/visualize variable)
     # Make a flowchart for the program
     # Then go back and recode
-
+7
 def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, envimean, envivariance, driftvariance, adaptivetracking, gain, per, maxsurvivalrate, birthrate, matureage, percentbh, showgraphs, figuresavepath):
     # adaptivetracking=0
     x=np.linspace(-1,1,numberofbins) # number of bins between -1 and 1
@@ -43,7 +43,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
         reducedbethedgeinitial[:]=reducedbethedgeinitial[:]/np.sum(reducedbethedgeinitial[:])*flynum # total # of flies=flynum
 
         envi=np.zeros((numberofbins,numberofdays))
-        envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0
+        envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0 NOTE: what's the point of setting this up? Just for the initial day? line 56
         envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
         driftadvantage=np.zeros((numberofdays))
         betadvantage=np.zeros((numberofdays))
@@ -57,13 +57,12 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
             envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate # Normalize the envi and multiply by maxsurvival rate
             pref[:,t,0]=pref[:,0,0]*birthrate/flynum*np.sum(pref[:,t-1,matureage:]) # Calculate newborn flies
             if adaptivetracking[q]>0: # Add in adaptive tracking?
-                pref[:,t,0]=pref[:,t,0]*(1-adaptivetracking[q])+adaptivetracking[q]*birthrate*np.sum(pref[:,t-1,matureage:],1)
+                pref[:,t,0]=pref[:,t,0]*(1-adaptivetracking[q])+adaptivetracking[q]*birthrate*np.sum(pref[:,t-1,matureage:],1) #NOTE: but their age is still 0?
 
                 #maybe we should consider putting in some amount of variation on adaptivetracking (shift mean but keep bet hedging?)
             numfliesborntoday=np.sum(pref[:,t,0]) # Calculate the new number of flies born on that day
 
             betadvantage[t]=np.sum(np.multiply(pref[:,t,0], envi[:,t]))-numfliesborntoday*envi[math.floor(numberofbins/2),t] #
-
 
             for a in range(maxage): # For the flies age...
 
