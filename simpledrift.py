@@ -12,7 +12,7 @@ import os
 # 2. Document every single step (make a figure/visualize variable)
     # Make a flowchart for the program
     # Then go back and recode
-7
+
 def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, envimean, envivariance, driftvariance, adaptivetracking, gain, per, maxsurvivalrate, birthrate, matureage, percentbh, showgraphs, figuresavepath):
     # adaptivetracking=0
     x=np.linspace(-1,1,numberofbins) # number of bins between -1 and 1
@@ -43,7 +43,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
         reducedbethedgeinitial[:]=reducedbethedgeinitial[:]/np.sum(reducedbethedgeinitial[:])*flynum # total # of flies=flynum
 
         envi=np.zeros((numberofbins,numberofdays))
-        envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0 NOTE: what's the point of setting this up? Just for the initial day? line 56
+        envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0
         envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
         driftadvantage=np.zeros((numberofdays))
         betadvantage=np.zeros((numberofdays))
@@ -55,7 +55,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
         for t in range(1,numberofdays): # For each day...
             envi[:,t]=sci.norm.pdf(x,(envimean+gain*np.sin(t*np.pi*2/per)),envivariance) # Make envi a sin wave that changes over time
             envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate # Normalize the envi and multiply by maxsurvival rate
-            pref[:,t,0]=pref[:,0,0]*birthrate/flynum*np.sum(pref[:,t-1,matureage:]) # Calculate newborn flies
+            pref[:,t,0]=pref[:,0,0]*birthrate/flynum*np.sum(pref[:,t-1,matureage:]) # Calculate newborn flies, initial 
             if adaptivetracking[q]>0: # Add in adaptive tracking?
                 pref[:,t,0]=pref[:,t,0]*(1-adaptivetracking[q])+adaptivetracking[q]*birthrate*np.sum(pref[:,t-1,matureage:],1) #NOTE: but their age is still 0?
 
@@ -66,7 +66,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
 
             for a in range(maxage): # For the flies age...
 
-                driftadvantage[t]+=np.sum(np.multiply(pref[:,t-1,a-1], envi[:,t])) # Calculating the number of flies that survive without drift #Should extend to include BH
+                driftadvantage[t]+=np.sum(np.multiply(pref[:,t-1,a-1], envi[:,t])) # Calculating the number of flies that survive without drift NOTE: Should extend to include BH?
 
                 if a>0:
                     for b in range(numberofbins):
@@ -75,6 +75,12 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                         else: # If not, multiply by the blur value and carry it forward
                             pref[:,t,a]+=pref[b,t-1,a-1]*blur[b,:]/np.sum(blur[b,:])
                     pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Multiplying the preference to the environment
+
+                if os.path.exists(figuresavepath):
+                    np.savetxt(os.path.join(figuresavepath, 'driftadvantage'),driftadvantage)
+                    print('blur')
+                else:
+                    print('not saving, no valid path')
 
             driftadvantage[t]=np.sum(pref[:,t,:])-driftadvantage[t]-numfliesborntoday
 
@@ -131,5 +137,11 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
         #         print('not saving, no valid path')
 
         finalpop[q]=np.sum(pref[:,-1,:])
+        anymatrix=pref[:,:,1]
+        if os.path.exists(figuresavepath):
+            np.savetxt(os.path.join(figuresavepath,'kaldjf'),anymatrix)
+            print(figuresavepath)
+        else:
+            print('not saving, no valid path')
 
     return finalpop
