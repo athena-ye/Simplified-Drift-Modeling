@@ -77,7 +77,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                     pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Multiplying the preference to the environment
 
                 if os.path.exists(figuresavepath):
-                    np.savetxt(os.path.join(figuresavepath, 'driftadvantage'),driftadvantage)
+                    np.savetxt(os.path.join(figuresavepath, 'driftadvantage'+ str(driftvariance[q])+'.csv'),driftadvantage)
                     print('blur')
                 else:
                     print('not saving, no valid path')

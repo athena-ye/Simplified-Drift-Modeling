@@ -12,7 +12,7 @@ def driftmodeling(flynum, numberofbins, maxage, numberofdays, prefmean, prefvari
     prefmean= np.array([prefmean])# Make an array for prefmean
     driftvariance=np.array([driftvariance])# Make an array for driftvariance
     adaptivetracking=np.array([adaptivetracking])# Make an array for adaptivetracking
-    numconditions=prefvariance.shape# Set the number of conditions based on the total conditions we're running
+    numconditions=prefvariance.shape # Set the number of conditions based on the total conditions we're running
     finalpop=np.zeros((numconditions))# Set a zeros array for the finalpop
 
     for q in range(numconditions):# Run a for loop for each condition
