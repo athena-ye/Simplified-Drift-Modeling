@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import time
 import math
 import os
+import pandas as pd
 
 # 1. Start from scratch and recode
     # General format and rewrite
@@ -23,6 +24,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
     adaptivetracking=np.array([adaptivetracking])
     numconditions=max(prefvariance.shape) # Number of conditions based on the total conditions we're running
     finalpop=np.zeros((numconditions))
+    numdays=np.array([numberofdays])
 
     for q in range(numconditions): # for loop for each condition\
         pref=np.zeros((numberofbins,numberofdays,maxage)) # Matrix, [bins, days, maxage, bh vs. reducebh]
@@ -47,6 +49,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
         envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
         driftadvantage=np.zeros((numberofdays))
         betadvantage=np.zeros((numberofdays))
+        numdays=np.zeros((numberofdays))
         blur=np.zeros((numberofbins,numberofbins)) # [which bin profile it's for, what the distribution is between that bin and all other bins, 2]
 
         for b in range(numberofbins): # Calculate a value to blur the bins
@@ -75,14 +78,15 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                         else: # If not, multiply by the blur value and carry it forward
                             pref[:,t,a]+=pref[b,t-1,a-1]*blur[b,:]/np.sum(blur[b,:])
                     pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Multiplying the preference to the environment
-
+        
                 if os.path.exists(figuresavepath):
-                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.csv'),np.concatenate((driftadvantage[:,np.newaxis],numfliesborntoday[:,np.newaxis]), axis=1), delimiter= ',' , header='Each row is one day\n Drift Advantage, Bet Advantage')
+                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.csv'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
                     print('blur')
                 else:
                     print('not saving, no valid path')
 
             driftadvantage[t]=np.sum(pref[:,t,:])-driftadvantage[t]-numfliesborntoday
+            numdays[t]=int(numdays[t-1]+1)
 
         # if showgraphs:
         #     fig, (ax0, ax1, ax2, ax3, ax4) = plt.subplots(5, 1)
