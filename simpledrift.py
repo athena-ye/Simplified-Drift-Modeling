@@ -80,7 +80,7 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                     pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Multiplying the preference to the environment
         
                 if os.path.exists(figuresavepath):
-                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.csv'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
+                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.csv'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
                     print('blur')
                 else:
                     print('not saving, no valid path')
