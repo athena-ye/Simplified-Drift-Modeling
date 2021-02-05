@@ -9,18 +9,21 @@ import math
 from joblib import Parallel, delayed
 import os
 
-def matrixmaker(bhlower, bhupper, bhinterval, driftlower, driftupper, driftinterval):
+def matrixmaker(envi, bhlower, bhupper, bhinterval, driftlower, driftupper, driftinterval):
 
-    flynum=1
-    numberofbins=100
-    numberofdays=100
+    # flynum=1
+    # numberofbins=100
+    # numberofdays=100
+    # envimean=0
+    # envivariance=.25
+    # maxsurvivalrate=1
+    # gain=.4
+    # per=20
+    # envi=sd.sinwaveinput(numberofbins, numberofdays, envimean, envivariance, maxsurvivalrate, gain, per)
+    #
+
     prefmean=0
-    envimean=0
-    envivariance=.25
-    gain=.4
-    per=20
-    maxsurvivalrate=1
-    birthrate=40
+    birthrate=10
     matureage=10
     percentbh=0.01
     adaptivetracking=0
@@ -41,18 +44,18 @@ def matrixmaker(bhlower, bhupper, bhinterval, driftlower, driftupper, driftinter
     flatmatrix=np.zeros(numruns)
 
     # for x in range(bhinterval):
-    flatmatrix[:]=Parallel(n_jobs=-1, verbose=10)(delayed(sd.driftmodeling)(flynum, numberofbins, numberofdays, prefmean, [prefvariance[n%bhinterval]], envimean, envivariance, [driftvariance[math.floor(n/bhinterval)]], adaptivetracking, gain, per,maxsurvivalrate,birthrate,matureage, percentbh, showgraphs, figuresavepath) for n in range(numruns))
+    flatmatrix[:]=Parallel(n_jobs=-1, verbose=10)(delayed(sd.driftmodeling)(envi, prefmean, [prefvariance[n%bhinterval]], [driftvariance[math.floor(n/bhinterval)]], adaptivetracking, birthrate,matureage, percentbh, showgraphs, figuresavepath) for n in range(numruns))
             # print(["Drift is: ", driftvariance[y], "Bet-hedging is: ", driftvariance[x]] )
             # print(matrix)
-    print(flatmatrix)
+    # print(flatmatrix)
 
     # flatmatrix=np.matrix(flatmatrix)
     # flatmatrix=
     matrix=np.zeros((bhinterval,driftinterval))
     matrix[:,:]=flatmatrix.reshape((bhinterval, driftinterval), order='F')
     matrixlog=np.log(matrix)
-    print(matrixlog)
-    print(matrix)
+    # print(matrixlog)
+    # print(matrix)
 
 
 
@@ -60,8 +63,8 @@ def matrixmaker(bhlower, bhupper, bhinterval, driftlower, driftupper, driftinter
     driftmargin=(driftupper-driftlower)/(driftinterval-1)/2
     prefvariancemesh=np.linspace(bhlower-bhmargin, bhupper+bhmargin, bhinterval+1)
     driftvariancemesh=np.linspace(driftlower-driftmargin, driftupper+driftmargin, driftinterval+1)
-    print(prefvariancemesh)
-    print(driftvariancemesh)
+    # print(prefvariancemesh)
+    # print(driftvariancemesh)
 
 # driftvariancegrid2, prefvariancegrid2= np.meshgrid(driftvariance, prefvariance)
 

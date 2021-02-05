@@ -4,7 +4,12 @@ import matplotlib.pyplot as plt
 import time
 import math
 import os
-import pandas as pd
+import scipy.stats as stat
+
+
+import colorednoise as cn
+
+
 
 # 1. Start from scratch and recode
     # General format and rewrite
@@ -13,9 +18,101 @@ import pandas as pd
 # 2. Document every single step (make a figure/visualize variable)
     # Make a flowchart for the program
     # Then go back and recode
+def sinwaveinput(numberofbins, numberofdays, envimean, envivariance, maxsurvivalrate, gain, per):
+    envi=np.zeros((numberofbins,numberofdays))
+    x=np.linspace(-1,1,numberofbins)
+    envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0
+    envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
 
-def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, envimean, envivariance, driftvariance, adaptivetracking, gain, per, maxsurvivalrate, birthrate, matureage, percentbh, showgraphs, figuresavepath):
+    for t in range(1,numberofdays):
+        envi[:,t]=sci.norm.pdf(x,(envimean+gain*np.sin(t*np.pi*2/per)),envivariance) # Making envi a sin wave that changes over time
+        envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate
+    return(envi)
+
+def diffusion(numberofbins, numberofdays, envimean,envivariance, maxsurvivalrate, dailydrift):
+    envi=np.zeros((numberofbins,numberofdays))
+    x=np.linspace(-1,1,numberofbins)
+    envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0
+    envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
+    blur=np.zeros((numberofbins,numberofbins)) # [which bin profile it's for, what the distribution is between that bin and all other bins, 2]
+
+    for b in range(numberofbins):
+        blur[b,:]=sci.norm.pdf(x,x[b],dailydrift)
+
+    for t in range(1,numberofdays):
+        for b in range (numberofbins):
+            # blur=sci.norm.pdf(x,x[b],dailydrift)
+            envi[:,t]+=envi[b,t-1]*blur[b,:]/np.sum(blur[b,:])
+        # envi[:,t]=sci.norm.pdf(x,(envimean,envivariance) # Making envi a sin wave that changes over time
+        # envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate
+    return(envi)
+
+def randomwalk(numberofbins, numberofdays, envimean,envivariance, maxsurvivalrate, dailydrift):
+    envi=np.zeros((numberofbins,numberofdays))
+    x=np.linspace(-1,1,numberofbins)
+    envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0
+    envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
+    blur=np.zeros((numberofbins,numberofbins)) # [which bin profile it's for, what the distribution is between that bin and all other bins, 2]
+
+    for t in range(1,numberofdays):
+        envimean+=np.random.normal(0,dailydrift)
+        envi[:,t]=sci.norm.pdf(x,envimean,envivariance) # Making envi a sin wave that changes over time
+        envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate
+    return(envi)
+
+def metropolishastingsdrift(numberofbins, numberofdays, envimeanvariance, envivariance, maxsurvivalrate, dailydrift):
+    envi=np.zeros((numberofbins,numberofdays))
+    x=np.linspace(-1,1,numberofbins)
+    envimean=np.random.normal(0,envimeanvariance)
+    envi[:,0]=sci.norm.pdf(x, envimean, envivariance) # A gaussian of environment with center around 0
+
+    for t in range(1, numberofdays):
+        pcurrentvalue=stat.norm.pdf(envimean,0,envimeanvariance)
+        # proposedvalue=np.random.normal(0,variability)
+        proposedvalue=np.random.normal(0,envimeanvariance)*dailydrift+envimean*(1-dailydrift)
+
+        pproposedvalue=stat.norm.pdf(proposedvalue,0,envimeanvariance)
+        if pproposedvalue/pcurrentvalue>(1-np.random.rand()):
+            # return proposedvalue*percentdrift+currentvalue*(1-percentdrift)
+            envimean=proposedvalue
+        envi[:,t]=sci.norm.pdf(x, envimean, envivariance) # A gaussian of environment with center around 0
+        envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate
+    return(envi)
+
+def whitedrift(numberofbins, numberofdays, envimeanvariance, envivariance, maxsurvivalrate, dailydrift):
+    envi=np.zeros((numberofbins,numberofdays))
+    x=np.linspace(-1,1,numberofbins)
+    # envimean=np.random.normal(0,envimeanvariance)
+
+    for t in range(1, numberofdays):
+        envimean=np.random.normal(0,envimeanvariance)
+        envi[:,t]=sci.norm.pdf(x, envimean, envivariance) # A gaussian of environment with center around 0
+        envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate
+
+    return(envi)
+
+def powerdrift(numberofbins, numberofdays, envimeanvariance, envivariance, maxsurvivalrate, power):
+    # beta = 1 # the exponent
+    samples = 100 # number of samples to generate
+    y = cn.powerlaw_psd_gaussian(power, numberofdays)*envimeanvariance
+
+    envi=np.zeros((numberofbins,numberofdays))
+    x=np.linspace(-1,1,numberofbins)
+    # envimean=np.random.normal(0,envimeanvariance)
+    # stat.norm.ppf()
+    for t in range(numberofdays):
+        envi[:,t]=sci.norm.pdf(x, y[t], envivariance) # A gaussian of environment with center around 0
+        envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate
+    return(envi)
+
+# def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, envimean, envivariance, driftvariance, adaptivetracking, gain, per, maxsurvivalrate, birthrate, matureage, percentbh, showgraphs, figuresavepath):
     # adaptivetracking=0
+
+def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking, birthrate, matureage, percentbh, showgraphs, figuresavepath):
+    flynum=1
+    numberofbins=envi.shape[0]
+    numberofdays=envi.shape[1]
+
     x=np.linspace(-1,1,numberofbins) # number of bins between -1 and 1
     maxage=30 #maximum age
     prefvariance=np.array([prefvariance])
@@ -44,9 +141,9 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
             reducedbethedgeinitial[math.floor(numberofbins/2)]=flynum
         reducedbethedgeinitial[:]=reducedbethedgeinitial[:]/np.sum(reducedbethedgeinitial[:])*flynum # total # of flies=flynum
 
-        envi=np.zeros((numberofbins,numberofdays))
-        envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0
-        envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
+        # envi=np.zeros((numberofbins,numberofdays))
+        # envi[:,0]=sci.norm.pdf(x,envimean,envivariance) # A gaussian of environment with center around 0
+        # envi=envi/(np.max(envi))*maxsurvivalrate # Normalizing the maximum envi value and factoring in deathrate
         driftadvantage=np.zeros((numberofdays))
         betadvantage=np.zeros((numberofdays))
         numdays=np.zeros((numberofdays))
@@ -55,12 +152,15 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
         for b in range(numberofbins): # Calculate a value to blur the bins
             blur[b,:]=sci.norm.pdf(x,x[b],driftvariance[q])
 
-        for t in range(1,numberofdays): # For each day...
-            envi[:,t]=sci.norm.pdf(x,(envimean+gain*np.sin(t*np.pi*2/per)),envivariance) # Make envi a sin wave that changes over time
-            envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate # Normalize the envi and multiply by maxsurvival rate
-            pref[:,t,0]=pref[:,0,0]*birthrate/flynum*np.sum(pref[:,t-1,matureage:]) # Calculate newborn flies, initial 
-            if adaptivetracking[q]>0: # Add in adaptive tracking?
-                pref[:,t,0]=pref[:,t,0]*(1-adaptivetracking[q])+adaptivetracking[q]*birthrate*np.sum(pref[:,t-1,matureage:],1) #NOTE: but their age is still 0?
+        for t in range(1,numberofdays):
+
+            # envi[:,t]=sci.norm.pdf(x,(envimean+gain*np.sin(t*np.pi*2/per)),envivariance) # Making envi a sin wave that changes over time
+            # envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate # Normalizing the envi and multiplying by maxsurvival rate
+            # # print('t is: '+str(t))
+            # for w in range(2):
+            pref[:,t,0]=pref[:,0,0]*birthrate/flynum*np.sum(pref[:,t-1,matureage:]) # Calculate newborn flies
+            if adaptivetracking[q]>0:
+                pref[:,t,0]=pref[:,t,0]*(1-adaptivetracking[q])+adaptivetracking[q]*birthrate*np.sum(pref[:,t-1,matureage:],1)
 
                 #maybe we should consider putting in some amount of variation on adaptivetracking (shift mean but keep bet hedging?)
             numfliesborntoday=np.sum(pref[:,t,0]) # Calculate the new number of flies born on that day
@@ -86,58 +186,72 @@ def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, en
                     print('not saving, no valid path')
 
             driftadvantage[t]=np.sum(pref[:,t,:])-driftadvantage[t]-numfliesborntoday
-            numdays[t]=int(numdays[t-1]+1)
+            # print(np.sum(pref[:,t,0]))
+            # print(np.sum(pref[:,t-1,matureage:]))
 
-        # if showgraphs:
-        #     fig, (ax0, ax1, ax2, ax3, ax4) = plt.subplots(5, 1)
-        #     fig.set_figwidth(10)
-        #     fig.set_figheight(12)
-        #     fig.tight_layout()
-        #     plt.subplots_adjust(hspace=.6)
-        #     c=ax0.pcolormesh(envi)
-        #     fig.colorbar(c,ax=ax0)
-        #     ax0.set_title('Environment (color is fraction of flies of given pref survive)')
-        #     ax0.set_ylabel('Preference')
-        #     ax0.set_xlabel('Day')
+            # betadvantage[t]=np.sum(pref[:,t,0]-pref[:,t,0])
+            # pref[:,t,1:,0]=pref[:,t,:-1,0] #replaced with a-1
 
-        #     c=ax1.pcolormesh(np.sum(pref[:,:,:],axis=2))
-        #     fig.colorbar(c,ax=ax1)
-        #     ax1.set_title('Fly Preference (color is log(num) flies each day)')
-        #     ax1.set_ylabel('Preference')
-        #     ax1.set_xlabel('Day')
 
-        #     ax2.plot(np.log(np.sum(pref[:,:,:],axis=(0,2))))
-        #     ax2.set_title('total log(num) flies)') # lowest value is 0.0001 (prefvariance = 0.01 with percent bh=0.01)
-        #     ax2.set_ylabel('log(num) flies)')
-        #     ax2.set_xlabel('Day')
-        #     ax2.set_xlim(0,numberofdays)
+        if showgraphs:
+            #before = time.perf_counter()
+            fig, (ax0, ax1,  ax1d, ax2, ax3, ax4) = plt.subplots(6, 1)
+            fig.set_figwidth(10)
+            fig.set_figheight(12)
+            fig.tight_layout()
+            plt.subplots_adjust(hspace=.6)
+            c=ax0.pcolormesh(envi)
+            fig.colorbar(c,ax=ax0)
+            ax0.set_title('Environment (color is fraction of flies of given pref survive)')
+            ax0.set_ylabel('Preference')
+            ax0.set_xlabel('Day')
 
-        #     # ax3.plot(driftadvantage)
-        #     ax3.plot(driftadvantage/np.sum(pref[:,:,:],axis=(0,2)))
-        #     ax3.set_title('Change in death rate due to last day\'s drift ')
-        #     ax3.set_ylabel('∆surviving flies/total flies')
-        #     ax3.set_xlabel('Day')
-        #     ax3.set_xlim(0,numberofdays)
+            c=ax1.pcolormesh(np.sum(pref[:,:,:],axis=2))
+            fig.colorbar(c,ax=ax1)
+            ax1.set_title('Fly Preference (color is log(num) flies each day)')
+            ax1.set_ylabel('Preference')
+            ax1.set_xlabel('Day')
 
-        #     ax4.plot(betadvantage/np.sum(pref[:,:,:],axis=(0,2)))
-        #     ax4.set_title('Change in death rate due to last day\'s bethedging ')
-        #     ax4.set_ylabel('∆surviving flies/total flies')
-        #     ax4.set_xlabel('Day')
-        #     ax4.set_xlim(0,numberofdays)
+            c=ax1d.pcolormesh(np.sum(pref[:,:,:],axis=2)/np.max(np.sum(pref[:,:,:],axis=2),axis=0))
+            fig.colorbar(c,ax=ax1d)
+            ax1d.set_title('Fly Preference Distribution (color is %daily flies)')
+            ax1d.set_ylabel('Preference')
+            ax1d.set_xlabel('Day')
 
-        #     fig.colorbar(c,ax=ax2)
-        #     fig.colorbar(c,ax=ax3)
-        #     fig.colorbar(c,ax=ax4)
+            ax2.plot(np.log(np.sum(pref[:,:,:],axis=(0,2))))
+            ax2.set_title('total log(num) flies)') # lowest value is 0.0001 (prefvariance = 0.01 with percent bh=0.01)
+            ax2.set_ylabel('log(num) flies)')
+            ax2.set_xlabel('Day')
+            ax2.set_xlim(0,numberofdays)
 
-        #     fig.suptitle('Bet-hedge variance: '+str(prefvariance[q])+', Drift variance: '+str(driftvariance[q])+', Adaptive Tracking: '+str(adaptivetracking[q]), y=-.05, fontsize=16)
+            # ax3.plot(driftadvantage)
+            ax3.plot(driftadvantage/np.sum(pref[:,:,:],axis=(0,2)))
+            ax3.set_title('Change in death rate due to last day\'s drift ')
+            ax3.set_ylabel('∆surviving flies/total flies')
+            ax3.set_xlabel('Day')
+            ax3.set_xlim(0,numberofdays)
 
-        #     plt.show()
+            ax4.plot(betadvantage/np.sum(pref[:,:,:],axis=(0,2)))
+            ax4.set_title('Change in death rate due to last day\'s bethedging ')
+            ax4.set_ylabel('∆surviving flies/total flies')
+            ax4.set_xlabel('Day')
+            ax4.set_xlim(0,numberofdays)
 
-        #     if os.path.exists(figuresavepath):
-        #         fig.savefig(os.path.join(figuresavepath,'bh'+str(prefvariance[q])+'dv'+str(driftvariance[q])+'.png'),bbox_inches='tight', pad_inches=.3)
-        #         print(figuresavepath)
-        #     else:
-        #         print('not saving, no valid path')
+            fig.colorbar(c,ax=ax2)
+            fig.colorbar(c,ax=ax3)
+            fig.colorbar(c,ax=ax4)
+
+            fig.suptitle('Bet-hedge variance: '+str(prefvariance[q])+', Drift variance: '+str(driftvariance[q])+', Adaptive Tracking: '+str(adaptivetracking[q]), y=-.05, fontsize=16)
+
+            plt.show()
+
+            if os.path.exists(figuresavepath):
+                fig.savefig(os.path.join(figuresavepath,'bh'+str(prefvariance[q])+'dv'+str(driftvariance[q])+'.png'),bbox_inches='tight', pad_inches=.3)
+                print(figuresavepath)
+            else:
+                print('not saving, no valid path')
+        #after = time.perf_counter()
+        #print(after-before)
 
         finalpop[q]=np.sum(pref[:,-1,:])
         anymatrix=pref[:,:,1]
