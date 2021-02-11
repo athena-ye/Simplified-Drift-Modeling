@@ -9,7 +9,7 @@ import math
 from joblib import Parallel, delayed
 import os
 
-def matrixmaker(envi, bhlower, bhupper, bhinterval, driftlower, driftupper, driftinterval):
+def matrixmaker(envi, bhlower, bhupper, bhinterval, driftlower, driftupper, driftinterval, runindex=0):
 
     # flynum=1
     # numberofbins=100
@@ -83,7 +83,10 @@ def matrixmaker(envi, bhlower, bhupper, bhinterval, driftlower, driftupper, drif
     plt.show
 
     if os.path.exists(figuresavepath):
-        fig.savefig(os.path.join(figuresavepath,'heatmap.png'),bbox_inches='tight', pad_inches=.3)
+        heatmapname='R'+str(runindex)+'_heatmap.png'
+        fig.savefig(os.path.join(figuresavepath,heatmapname),bbox_inches='tight', pad_inches=.3)
+        filename='R'+str(runindex)+'_Env_FinalPopulations.npz'
+        np.savez(os.path.join(figuresavepath,filename), finalpopulations=matrix, prefvariancemesh=prefvariancemesh, driftvariancemesh=driftvariancemesh, envi=envi)
         print(figuresavepath)
     else:
         print('not saving, no valid path')
