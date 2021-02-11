@@ -1,3 +1,4 @@
+#pip install colorednoise
 import numpy as np
 import scipy.stats as sci
 import matplotlib.pyplot as plt
@@ -5,8 +6,6 @@ import time
 import math
 import os
 import scipy.stats as stat
-
-
 import colorednoise as cn
 
 
@@ -95,7 +94,6 @@ def powerdrift(numberofbins, numberofdays, envimeanvariance, envivariance, maxsu
     # beta = 1 # the exponent
     samples = 100 # number of samples to generate
     y = cn.powerlaw_psd_gaussian(power, numberofdays)*envimeanvariance
-
     envi=np.zeros((numberofbins,numberofdays))
     x=np.linspace(-1,1,numberofbins)
     # envimean=np.random.normal(0,envimeanvariance)
@@ -122,6 +120,13 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
     numconditions=max(prefvariance.shape) # Number of conditions based on the total conditions we're running
     finalpop=np.zeros((numconditions))
     numdays=np.array([numberofdays])
+    print(prefmean)
+    print(prefvariance)
+    print(driftvariance)
+    print(birthrate)
+    print(matureage)
+    print(percentbh)
+    print(adaptivetracking)
 
     for q in range(numconditions): # for loop for each condition\
         pref=np.zeros((numberofbins,numberofdays,maxage)) # Matrix, [bins, days, maxage, bh vs. reducebh]
@@ -192,6 +197,7 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
             # betadvantage[t]=np.sum(pref[:,t,0]-pref[:,t,0])
             # pref[:,t,1:,0]=pref[:,t,:-1,0] #replaced with a-1
 
+        np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.csv'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0]), delimiter= ',')
 
         if showgraphs:
             #before = time.perf_counter()
