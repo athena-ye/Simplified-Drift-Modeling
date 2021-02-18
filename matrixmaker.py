@@ -9,7 +9,7 @@ import math
 from joblib import Parallel, delayed
 import os
 
-def matrixmaker(envi, bhlower, bhupper, bhinterval, driftlower, driftupper, driftinterval, runindex=0):
+def matrixmaker(envi, bhlower, bhupper, bhinterval, driftlower, driftupper, driftinterval, runindex=0, saveloc='none'):
 
     # flynum=1
     # numberofbins=100
@@ -82,13 +82,32 @@ def matrixmaker(envi, bhlower, bhupper, bhinterval, driftlower, driftupper, drif
     ax.set_title('Log of Final Population')
     plt.show
 
-    if os.path.exists(figuresavepath):
+    if os.path.exists(figuresavepath) and saveloc=='none':
+        print('none=not saving, no valid path')
+    if os.path.exists(figuresavepath) and saveloc=='npz':
         heatmapname='R'+str(runindex)+'_heatmap.png'
         fig.savefig(os.path.join(figuresavepath,heatmapname),bbox_inches='tight', pad_inches=.3)
         filename='R'+str(runindex)+'_Env_FinalPopulations.npz'
         np.savez(os.path.join(figuresavepath,filename), finalpopulations=matrix, prefvariancemesh=prefvariancemesh, driftvariancemesh=driftvariancemesh, envi=envi)
         print(figuresavepath)
+    if os.path.exists(figuresavepath) and saveloc=='csv':
+        heatmapname='R'+str(runindex)+'_heatmap.png'
+        fig.savefig(os.path.join(figuresavepath,heatmapname),bbox_inches='tight', pad_inches=.3)
+        filename='R'+str(runindex)+'_Env_FinalPopulations.csv'
+        np.savez(os.path.join(figuresavepath,filename), finalpopulations=matrix, prefvariancemesh=prefvariancemesh, driftvariancemesh=driftvariancemesh, envi=envi)
+        print(figuresavepath)
+    if os.path.exists(figuresavepath) and saveloc=='both':
+        heatmapname='R'+str(runindex)+'_heatmap.png'
+        fig.savefig(os.path.join(figuresavepath,heatmapname),bbox_inches='tight', pad_inches=.3)
+        filename='R'+str(runindex)+'_Env_FinalPopulations.npz'
+        np.savez(os.path.join(figuresavepath,filename), finalpopulations=matrix, prefvariancemesh=prefvariancemesh, driftvariancemesh=driftvariancemesh, envi=envi)
+        print(figuresavepath)
+        heatmapname='R'+str(runindex)+'_heatmap.png'
+        fig.savefig(os.path.join(figuresavepath,heatmapname),bbox_inches='tight', pad_inches=.3)
+        filename='R'+str(runindex)+'_Env_FinalPopulations.csv'
+        np.savez(os.path.join(figuresavepath,filename), finalpopulations=matrix, prefvariancemesh=prefvariancemesh, driftvariancemesh=driftvariancemesh, envi=envi)
+        print(figuresavepath)
     else:
-        print('not saving, no valid path')
+        print('error, no valid path for specified saveloc')
 
     return matrix, driftvariance, prefvariance

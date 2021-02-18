@@ -100,13 +100,13 @@ def powerdrift(numberofbins, numberofdays, envimeanvariance, envivariance, maxsu
     # stat.norm.ppf()
     for t in range(numberofdays):
         envi[:,t]=sci.norm.pdf(x, y[t], envivariance) # A gaussian of environment with center around 0
-        envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate
+        envi[:,t]=envi[:,t]/np.max(envi[:,t])*maxsurvivalrate    
     return(envi)
 
 # def driftmodeling(flynum, numberofbins, numberofdays, prefmean, prefvariance, envimean, envivariance, driftvariance, adaptivetracking, gain, per, maxsurvivalrate, birthrate, matureage, percentbh, showgraphs, figuresavepath):
     # adaptivetracking=0
 
-def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking, birthrate, matureage, percentbh, showgraphs, figuresavepath, driftmaxdistribution=0):
+def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking, birthrate, matureage, percentbh, showgraphs, figuresavepath, driftmaxdistribution=0, saveloc='none'):
     flynum=1
     numberofbins=envi.shape[0]
     numberofdays=envi.shape[1]
@@ -120,13 +120,6 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
     numconditions=max(prefvariance.shape) # Number of conditions based on the total conditions we're running
     finalpop=np.zeros((numconditions))
     numdays=np.array([numberofdays])
-    print(prefmean)
-    print(prefvariance)
-    print(driftvariance)
-    print(birthrate)
-    print(matureage)
-    print(percentbh)
-    print(adaptivetracking)
 
     for q in range(numconditions): # for loop for each condition\
         pref=np.zeros((numberofbins,numberofdays,maxage)) # Matrix, [bins, days, maxage, bh vs. reducebh]
@@ -193,22 +186,49 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
                         else: # If not, multiply by the blur value and carry it forward
                             pref[:,t,a]+=pref[b,t-1,a-1]*blur[b,:]/np.sum(blur[b,:])
                     pref[:,t,a]=np.multiply(pref[:,t,a], envi[:,t]) # Multiplying the preference to the environment
-        
-                if os.path.exists(figuresavepath):
+
+                if os.path.exists(figuresavepath) and saveloc=='none': 
+                    print('not saving, saveloc=none 1')
+                if os.path.exists(figuresavepath) and saveloc=='csv':
+                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.csv'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e') #header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
+                    print('saving as csv 1')
+                if os.path.exists(figuresavepath) and saveloc=='npz': 
+                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
+                    print('saving as npz 1')
+                if os.path.exists(figuresavepath) and saveloc=='both': 
+                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
                     np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.csv'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
-                    print('blur')
-                else:
-                    print('not saving, no valid path')
+                    print('saving as csv and npz 1')
+                # else:
+                #     print('not saving 1')
 
             driftadvantage[t]=np.sum(pref[:,t,:])-driftadvantage[t]-numfliesborntoday
+            numdays[t]=int(numdays[t-1]+1)
             # print(np.sum(pref[:,t,0]))
             # print(np.sum(pref[:,t-1,matureage:]))
 
             # betadvantage[t]=np.sum(pref[:,t,0]-pref[:,t,0])
             # pref[:,t,1:,0]=pref[:,t,:-1,0] #replaced with a-1
+        
+        sumofpref=np.sum(pref[:,:,:])
+        print(sumofpref)
 
-        np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.csv'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0]), delimiter= ',')
-
+        if os.path.exists(figuresavepath) and saveloc=='none': 
+            print('not saving, saveloc=none 2')
+        if os.path.exists(figuresavepath) and saveloc=='csv':
+            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'envi.csv'),(envi), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, sumofpref, numberofdays')
+            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.csv'),(np.column_stack([prefmean[0],prefvariance[0],driftvariance[0], birthrate, matureage,percentbh,adaptivetracking[0],sumofpref, numberofdays])), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, sumofpref, numberofdays')
+            print('saving as csv 2')
+        if os.path.exists(figuresavepath) and saveloc=='npz': 
+            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.npz'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0],sumofpref), delimiter= ',')
+            print('saving as npz 2')
+        if os.path.exists(figuresavepath) and saveloc=='both': 
+            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.csv'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0], sumofpref), delimiter= ',')
+            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.npz'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0], sumofpref), delimiter= ',')
+            print('saving as csv and npz 2')
+        # else:
+        #     print('not saving 2')
+        
         if showgraphs:
             #before = time.perf_counter()
             fig, (ax0, ax1,  ax1d, ax2, ax3, ax4) = plt.subplots(6, 1)
@@ -271,11 +291,17 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
 
         finalpop[q]=np.sum(pref[:,-1,:])
         anymatrix=pref[:,:,1]
+
         if os.path.exists(figuresavepath):
-            np.savetxt(os.path.join(figuresavepath,'kaldjf'),anymatrix)
+            np.savetxt(os.path.join(figuresavepath,'prefmatrix'),anymatrix)
             print(figuresavepath)
         else:
             print('not saving, no valid path')
 
 
     return finalpop
+
+#Make a csv/npz/both/none (default=none) for the preference
+#put all parameters in the npz file
+#put the paramaters in header for csv
+#make a function that loads a csv filea nd remakes a graph

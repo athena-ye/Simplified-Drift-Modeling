@@ -12,7 +12,7 @@ import csv
 
 def csvgraph(driftvariance, betadvantage):
 
-    matrix = csv.reader(open('Matrices/driftadvantage' + 'da'+ str(driftvariance)+'ba'+ str(betadvantage)+'.csv'+ '.csv','r'))
+    matrix = csv.reader(open('Matrices/driftadvantage' + 'da'+ str(driftvariance)+'ba'+ str(betadvantage)+'.csv', 'r'))
 
     # figuresavepath='figs'
     # prefvariance=np.linspace(bhlower, bhupper, bhinterval)
