@@ -193,7 +193,9 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
                     np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.csv'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e') #header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
                     print('saving as csv 1')
                 if os.path.exists(figuresavepath) and saveloc=='npz': 
-                    np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
+                    filename1='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'
+                    np.savez(os.path.join(figuresavepath,filename1), daynumber=numdays[:,np.newaxis],driftadvantage=driftadvantage[:,np.newaxis],betadvantage=betadvantage[:,np.newaxis])
+                    #np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
                     print('saving as npz 1')
                 if os.path.exists(figuresavepath) and saveloc=='both': 
                     np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
@@ -209,22 +211,22 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
 
             # betadvantage[t]=np.sum(pref[:,t,0]-pref[:,t,0])
             # pref[:,t,1:,0]=pref[:,t,:-1,0] #replaced with a-1
-        
-        sumofpref=np.sum(pref[:,:,:],axis=(0,2))
-        sumofprefax2=np.sum(pref[:,:,:],axis=2)
-        print(sumofpref.shape)
-        print(sumofprefax2.shape)
 
         if os.path.exists(figuresavepath) and saveloc=='none': 
             print('not saving, saveloc=none 2')
         if os.path.exists(figuresavepath) and saveloc=='csv':
             np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'envi.csv'),(envi), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, numberofdays')
-            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'ax2.csv'),(sumofprefax2), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, numberofdays')
-            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'pref.csv'),(sumofpref), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, numberofdays')
+           # np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'ax2.csv'),(sumofprefax2), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, numberofdays')
+           # np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'pref.csv'),(sumofpref), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, numberofdays')
             np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.csv'),(np.column_stack([prefmean[0],prefvariance[0],driftvariance[0], birthrate, matureage,percentbh,adaptivetracking[0], numberofdays])), delimiter= ',') #header='prefmean, prefvariance, driftvariance, birthrate, matureage, percentbh, adaptivetracking, sumofpref, numberofdays')
             print('saving as csv 2')
         if os.path.exists(figuresavepath) and saveloc=='npz': 
-            np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.npz'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0]), delimiter= ',')
+            filename2='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.npz'
+            np.savez(os.path.join(figuresavepath,filename2), prefmean=prefmean[0],prefvariance=prefvariance[0],driftvariance=driftvariance[0],birthrate=birthrate,matureage=matureage,percentbh=percentbh,adaptivetracking=adaptivetracking[0])
+            filename3='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'envi.npz'
+            np.savez(os.path.join(figuresavepath,filename3), envi=envi)
+            filename4='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'pref.npz'
+            np.savez(os.path.join(figuresavepath,filename4), pref2=np.sum(pref[:,:,:],axis=2),pref02=np.sum(pref[:,:,:],axis=(0,2)))
             print('saving as npz 2')
         if os.path.exists(figuresavepath) and saveloc=='both': 
             np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.csv'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0]), delimiter= ',')
@@ -233,8 +235,7 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
         # else:
         #     print('not saving 2')
 
-
-        
+        print(driftadvantage)
         if showgraphs:
             #before = time.perf_counter()
             fig, (ax0, ax1,  ax1d, ax2, ax3, ax4) = plt.subplots(6, 1)
