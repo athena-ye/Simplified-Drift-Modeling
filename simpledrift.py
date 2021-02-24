@@ -194,7 +194,7 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
                     print('saving as csv 1')
                 if os.path.exists(figuresavepath) and saveloc=='npz': 
                     filename1='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'
-                    np.savez(os.path.join(figuresavepath,filename1), daynumber=numdays[:,np.newaxis],driftadvantage=driftadvantage[:,np.newaxis],betadvantage=betadvantage[:,np.newaxis])
+                    np.savez(os.path.join(figuresavepath,filename1), daynumber=numdays[:],driftadvantage=driftadvantage[:],betadvantage=betadvantage[:])
                     #np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'.npz'),np.concatenate((numdays[:,np.newaxis],driftadvantage[:,np.newaxis],betadvantage[:,np.newaxis]), axis=1), delimiter= ',' , fmt='%i, %.4e, %.4e', header='Each row is one day\n Day, Drift Advantage, Bet Advantage')
                     print('saving as npz 1')
                 if os.path.exists(figuresavepath) and saveloc=='both': 
@@ -235,7 +235,11 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
         # else:
         #     print('not saving 2')
 
+        print(envi)
+        print(np.sum(pref[:,:,:],axis=2))
+        print(np.sum(pref[:,:,:],axis=(0,2)))
         print(driftadvantage)
+        print(betadvantage)
         if showgraphs:
             #before = time.perf_counter()
             fig, (ax0, ax1,  ax1d, ax2, ax3, ax4) = plt.subplots(6, 1)
