@@ -222,11 +222,11 @@ def driftmodeling(envi, prefmean, prefvariance, driftvariance, adaptivetracking,
             print('saving as csv 2')
         if os.path.exists(figuresavepath) and saveloc=='npz': 
             filename2='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.npz'
-            np.savez(os.path.join(figuresavepath,filename2), prefmean=prefmean[0],prefvariance=prefvariance[0],driftvariance=driftvariance[0],birthrate=birthrate,matureage=matureage,percentbh=percentbh,adaptivetracking=adaptivetracking[0])
-            filename3='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'envi.npz'
-            np.savez(os.path.join(figuresavepath,filename3), envi=envi)
-            filename4='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'pref.npz'
-            np.savez(os.path.join(figuresavepath,filename4), pref2=np.sum(pref[:,:,:],axis=2),pref02=np.sum(pref[:,:,:],axis=(0,2)))
+            np.savez(os.path.join(figuresavepath,filename2), prefmean=prefmean[0],prefvariance=prefvariance[0],driftvariance=driftvariance[0],birthrate=birthrate,matureage=matureage,percentbh=percentbh,adaptivetracking=adaptivetracking[0],envi=envi,pref2=np.sum(pref[:,:,:],axis=2),pref02=np.sum(pref[:,:,:],axis=(0,2)))
+            # filename3='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'envi.npz'
+            # np.savez(os.path.join(figuresavepath,filename3), envi=envi)
+            # filename4='da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'pref.npz'
+            # np.savez(os.path.join(figuresavepath,filename4), pref2=np.sum(pref[:,:,:],axis=2),pref02=np.sum(pref[:,:,:],axis=(0,2)))
             print('saving as npz 2')
         if os.path.exists(figuresavepath) and saveloc=='both': 
             np.savetxt(os.path.join(figuresavepath, 'da'+ str(driftvariance[q])+'ba'+ str(betadvantage[q])+'parameters.csv'),(prefmean[0],prefvariance[0],driftvariance[0], birthrate,matureage,percentbh,adaptivetracking[0]), delimiter= ',')
